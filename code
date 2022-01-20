@@ -1,0 +1,141 @@
+#ant farm base code!
+#written by Dr. Mo, Jan 22
+import random
+import pygame
+colony=[] #list to hold all the ants
+
+pygame.init()
+
+screen = pygame.display.set_mode((800,800))
+screen.fill((0,0,0))
+clock = pygame.time.Clock()
+
+#MAP: 1 is grass, 2 is brick
+map = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ,1 ,1, 1],
+       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 ,0, 1],
+       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 ,0, 1],
+       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 ,0, 1],
+       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 ,0, 1],
+       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 ,0, 1],
+       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 ,0, 1],
+       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 ,0, 1],
+       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 ,0, 1],
+       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 ,0, 1],
+       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 ,0, 1],
+       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 ,0, 1],
+       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 ,0, 1],
+       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 ,0, 1],
+       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 ,0, 1],
+       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ,1 ,1, 1]]
+
+#parent class---------------------------------------
+class ant:
+    def __init__(self, x, y, antPic):
+        self.age = 0
+        self.food = 10
+        self.xpos = x
+        self.ypos = y
+        self.direction = 0 #0 = left, 1 right, 2 up, 3 down
+        self.image = pygame.image.load(antPic)
+    def eat(self):
+        self.food+=10
+    def __del__(self): #destructor
+        print("ant killed.")
+    def movement(self):
+        if self.age % 5 == 0:
+            self.direction = random.randint(0,3)
+        if self.direction == 0:
+            self.xpos -= 1
+        if self.direction == 1:
+            self.xpos += 1
+        if self.direction == 2:
+            self.ypos -= 1
+        if self.direction == 3:
+            self.ypos += 1
+    def update(self):
+        #self.food-=1
+        self.age+=1        
+        self.movement()
+
+#child class--------------------------
+class worker(ant):
+    def __init__(self, x, y, antPic):
+        super().__init__(x,y,antPic)
+        self.name = "worker"
+
+    
+    def printInfo(self):
+        print("I am a worker and I am ", self.age, " days old. My food level is ", self.food, "curr dir ", self.direction)
+        screen.blit(self.image, (self.xpos,self.ypos), (0,0,20,20))
+#child class--------------------------
+class larva(ant):
+
+    def __init__(self, x, y, antPic):
+        self.name = "larva"
+        ant.__init__(self, x, y, antPic)
+    def printInfo(self):
+        print("I am a larva and I am ", self.age, " days old. My food level is ", self.food)
+        screen.blit(self.image, (self.xpos,self.ypos), (0,0,20,20))
+    #def metamorphasis():
+        
+#child class--------------------------
+class queen(ant):
+    def __init__(self, x, y, antPic):
+        self.name = "queen"
+        ant.__init__(self, x, y, antPic)
+        
+    def printInfo(self):
+        print("I am a queen and I am ", self.age, " days old. My food level is ", self.food)
+        screen.blit(self.image, (self.xpos,self.ypos), (0,0,20,20))
+        
+    def egg(self):
+        print("queen has laid an egg!")
+        BabyLarva = larva(self.xpos, self.ypos, "larva.png")
+        colony.append(BabyLarva)
+        
+#start of "main"########################################
+q1 = queen(100, 100, "queen.png")
+colony.append(q1)
+w1 = worker(200, 200, "worker.png")
+colony.append(w1)
+w2 = worker(250, 250, "worker.png")
+colony.append(w2)
+l1 = larva(150, 100, "larva.png")
+colony.append(l1)
+
+#game loop
+
+doExit = False
+while doExit == False:
+    clock.tick(50)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            doExit = True
+
+#print info for each ant in colony
+    screen.fill((0,0,0))
+    i = 0
+    while i != len(colony):
+        colony[i].printInfo()
+        colony[i].update()
+        if colony[i].name == "queen":
+            colony[i].egg()
+        if colony[i].name == "larva" and colony[i].age > 100:
+            colony.insert(i+1, worker(colony[i].xpos,colony[i].ypos, "worker.png"))
+            colony.pop(i)
+           
+         
+        if colony[i].age >500:
+            print("A ", colony[i].name, " has died.")
+            del colony[i]
+            i-=1
+
+        i += 1    
+    
+    pygame.display.flip()
+    
+    print("------------")
+
+    #userInput = input("press any key to continue, q to quit")
+    #if userInput == "q":
+    #    doExit = True
